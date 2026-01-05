@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: hms-postgres
+    environment:
+      POSTGRES_DB: hospitalmanagementsystem
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1234"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hms-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Hospital Management System Application
+  hms-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hms-app
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=hospitalmanagementsystem
+      - DB_USERNAME=postgres
+      - DB_PASSWORD="1234"
+      - JWT_SECRET=mySecretKeyForHMSApplicationWhichShouldBeAtLeast256BitsLong2024
+      - SPRING_PROFILES_ACTIVE=prod
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hms-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  hms-network:
+    driver: bridge

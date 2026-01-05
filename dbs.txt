@@ -1,0 +1,16 @@
+postgres
+template1
+template0
+students
+studentkvsrit
+Students
+studnetkvsrit
+mydatabase
+genaihackathon
+lmssystem
+departmentdb
+paymentmanagement
+my_database
+inventorydb
+hospitalmanagementsystem
+hospitalManagementSystem
